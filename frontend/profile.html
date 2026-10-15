@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="images/fav.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="User Profile - Expense Summary">
+    <title>Profile - Poomarathingal Task Manager</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .profile-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #282d47 0%, #000000 100%);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-avatar-placeholder {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .profile-details h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .expense-tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .expense-column {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .column-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .column-content {
+            padding: 1.5rem;
+        }
+
+        .expense-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .expense-table th {
+            text-align: left;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .expense-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .expense-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .expense-description {
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+
+        .expense-date {
+            font-size: 0.85rem;
+            color: var(--gray-color);
+        }
+
+        .expense-amount {
+            font-weight: 600;
+            color: var(--primary-color);
+            text-align: right;
+        }
+
+        .expense-share {
+            font-weight: 600;
+            color: var(--danger-color);
+            text-align: right;
+        }
+
+        .total-row {
+            font-weight: 700;
+            background: #f8f9fa;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 968px) {
+            .expense-tables {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .profile-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="logo">🏠 Poomarathingal Task Manager</h1>
+                    <div class="current-date" id="current-date"></div>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Back to Dashboard</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="profile-container">
+        <div class="profile-header">
+            <div class="profile-info">
+                <div class="profile-avatar" id="profile-avatar">
+                    <div class="profile-avatar-placeholder">U</div>
+                </div>
+                <div class="profile-details">
+                    <h1 id="profile-name">Loading...</h1>
+                    <p id="profile-username"></p>
+                </div>
+            </div>
+            <div class="profile-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Total Paid</div>
+                    <div class="stat-value" id="total-paid">₹0.00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total Share</div>
+                    <div class="stat-value" id="total-share">₹0.00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Net Balance</div>
+                    <div class="stat-value" id="net-balance">₹0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="expense-tables">
+            <!-- Expenses Paid Column -->
+            <div class="expense-column">
+                <div class="column-header">💰 Expenses I Paid For</div>
+                <div class="column-content">
+                    <table class="expense-table" id="paid-expenses-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th style="text-align: right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paid-expenses-body">
+                            <tr>
+                                <td colspan="2" style="text-align: center; padding: 2rem;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Expenses with Share Column -->
+            <div class="expense-column">
+                <div class="column-header">📊 Expenses I Have Share In</div>
+                <div class="column-content">
+                    <table class="expense-table" id="share-expenses-table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th style="text-align: right;">My Share</th>
+                            </tr>
+                        </thead>
+                        <tbody id="share-expenses-body">
+                            <tr>
+                                <td colspan="2" style="text-align: center; padding: 2rem;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- JavaScript -->
+    <script src="js/profile.js"></script>
+</body>
+</html>

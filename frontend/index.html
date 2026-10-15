@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="images/fav.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Roommate Task Manager - Streamline household chore management and promote collaboration">
+    <title>Poomarathingal Task Manager</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="logo">🏠 Poomarathingal Task Manager</h1>
+                    <div class="current-date" id="current-date"></div>
+                </div>
+                <nav class="nav">
+                    <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+                    <button class="nav-btn" data-view="tasks">Tasks</button>
+                    <button class="nav-btn" data-view="roommates">Roommates</button>
+                    <button class="nav-btn" data-view="expenses">💰 Expenses</button>
+                    <button class="nav-btn" data-view="waste-bin">Waste Bin</button>
+                    <button class="nav-btn" data-view="statistics">Statistics</button>
+                </nav>
+                <div class="header-right">
+                    <span id="user-display" class="user-display"></span>
+                    <button class="btn btn-warning" id="password-reset-btn" onclick="app.openPasswordResetModal()" style="margin-left: 10px; display: none;">🔑 Passwd Reset</button>
+                    <button class="btn btn-secondary" onclick="app.logout()" style="margin-left: 10px;">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view active">
+                <div class="view-header">
+                    <h2>Dashboard</h2>
+                    <button class="btn btn-primary" id="assign-tasks-btn">🎲 Assign Tasks Randomly</button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <h3 id="total-tasks-stat">0</h3>
+                            <p>Total Tasks</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <h3 id="completed-tasks-stat">0</h3>
+                            <p>Completed</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-info">
+                            <h3 id="pending-tasks-stat">0</h3>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3 id="total-roommates-stat">0</h3>
+                            <p>Roommates</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Assignments -->
+                <div class="section-card">
+                    <h3>Current Task Assignments</h3>
+                    <div id="current-assignments" class="assignments-container">
+                        <p class="empty-state">No tasks assigned yet. Click "Assign Tasks Randomly" to get started!</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="section-card">
+                    <h3>Recent Activity</h3>
+                    <div id="recent-activity" class="activity-list">
+                        <p class="empty-state">No recent activity</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tasks View -->
+            <section id="tasks-view" class="view">
+                <div class="view-header">
+                    <h2>Task Management</h2>
+                    <button class="btn btn-primary" id="add-task-btn">+ Add Task</button>
+                </div>
+
+                <!-- Task Filters -->
+                <div class="filters">
+                    <select id="task-filter-status" class="filter-select">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <select id="task-filter-month" class="filter-select">
+                        <option value="all">All Months</option>
+                    </select>
+                </div>
+
+                <!-- Tasks List -->
+                <div id="tasks-list" class="tasks-grid">
+                    <p class="empty-state">No tasks yet. Add your first task to get started!</p>
+                </div>
+            </section>
+
+            <!-- Roommates View -->
+            <section id="roommates-view" class="view">
+                <div class="view-header">
+                    <h2>Roommate Management</h2>
+                    <!-- Add Roommate button removed - users are automatically added on registration -->
+                </div>
+
+                <!-- Roommates List -->
+                <div id="roommates-list" class="roommates-grid">
+                    <p class="empty-state">No roommates added yet. Add roommates to start managing tasks!</p>
+                </div>
+            </section>
+
+            <!-- Statistics View -->
+            <section id="statistics-view" class="view">
+                <div class="view-header">
+                    <h2>Statistics & Analytics</h2>
+                </div>
+
+                <!-- Contribution Chart -->
+                <div class="section-card">
+                    <h3>Task Completion by Roommate</h3>
+                    <div id="contribution-chart" class="chart-container">
+                        <p class="empty-state">No data available yet</p>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="section-card">
+                    <h3>Tasks by Category</h3>
+                    <div id="category-chart" class="chart-container">
+                        <p class="empty-state">No data available yet</p>
+                    </div>
+                </div>
+
+                <!-- Detailed Statistics -->
+                <div class="section-card">
+                    <h3>Detailed Statistics</h3>
+                    <div id="detailed-stats" class="stats-table">
+                        <p class="empty-state">No statistics available yet</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Waste Bin View -->
+            <section id="waste-bin-view" class="view">
+                <div class="view-header">
+                    <h2>Waste Bin Tracking</h2>
+                </div>
+
+                <div class="section-card">
+                    <h3>Add Waste Dumped Entry</h3>
+                    <form id="waste-bin-form" class="waste-bin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="waste-bin-roommate">Roommate *</label>
+                                <select id="waste-bin-roommate" required>
+                                    <option value="">Select roommate</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="waste-bin-date">Dumped Date *</label>
+                                <input type="date" id="waste-bin-date" required>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">+ Add Entry</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section-card">
+                    <h3>Waste Bin History</h3>
+                    <div id="waste-bin-list" class="waste-bin-list">
+                        <p class="empty-state">No waste bin entries yet.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expenses View -->
+            <section id="expenses-view" class="view">
+                <div class="view-header">
+                    <h2>💰 Expense Splitting</h2>
+                    <button class="btn btn-primary" id="create-group-btn">+ Create Group</button>
+                </div>
+
+                <!-- Expense Groups List -->
+                <div class="section-card">
+                    <h3>Your Expense Groups</h3>
+                    <div id="expense-groups-list" class="expense-groups-grid">
+                        <p class="empty-state">No expense groups yet. Create one to start splitting expenses!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expense Group Detail View -->
+            <section id="expense-detail-view" class="view">
+                <div class="view-header">
+                    <button class="btn btn-secondary" id="back-to-groups-btn">← Back to Groups</button>
+                    <h2 id="group-detail-title">Group Details</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-warning" id="manage-members-btn" style="display: none;">👥 Manage Members</button>
+                        <button class="btn btn-primary" id="add-expense-btn">+ Add Expense</button>
+                    </div>
+                </div>
+
+                <!-- Balance Summary -->
+                <div class="section-card">
+                    <h3>💳 Balance Summary</h3>
+                    <div id="balance-summary" class="balance-summary">
+                        <p class="empty-state">Loading balances...</p>
+                    </div>
+                </div>
+
+                <!-- Suggested Settlements -->
+                <div class="section-card">
+                    <h3>💸 Suggested Settlements</h3>
+                    <div id="suggested-settlements" class="settlements-list">
+                        <p class="empty-state">No settlements needed</p>
+                    </div>
+                </div>
+
+                <!-- Expenses List -->
+                <div class="section-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3>📝 Expenses</h3>
+                        <div class="filters">
+                            <select id="expense-user-filter" class="filter-select">
+                                <option value="all">All Expenses</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="group-expenses-list" class="expenses-list">
+                        <p class="empty-state">No expenses yet</p>
+                    </div>
+                </div>
+
+                <!-- Settlement History -->
+                <div class="section-card">
+                    <h3>📜 Settlement History</h3>
+                    <div id="settlement-history" class="settlements-list">
+                        <p class="empty-state">No settlements recorded yet</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal for Adding/Editing Task -->
+    <div id="task-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="task-modal-title">Add New Task</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="task-form">
+                <div class="form-group">
+                    <label for="task-name">Task Name *</label>
+                    <input type="text" id="task-name" required placeholder="Enter task name" maxlength="100">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-frequency">Frequency</label>
+                        <select id="task-frequency">
+                            <option value="one-time">One-time</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-duration">Estimated Time (minutes)</label>
+                        <input type="number" id="task-duration" min="5" placeholder="30">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-task-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Adding/Editing Roommate -->
+    <div id="roommate-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="roommate-modal-title">Add New Roommate</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="roommate-form">
+                <div class="form-group">
+                    <label for="roommate-name">Name *</label>
+                    <input type="text" id="roommate-name" required placeholder="e.g., John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="roommate-photo">Profile Picture</label>
+                    <input type="file" id="roommate-photo" accept="image/*">
+                    <div id="roommate-photo-preview" class="photo-preview"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-roommate-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Roommate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Task Completion -->
+    <div id="complete-task-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Complete Task</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="complete-task-form">
+                <div class="form-group">
+                    <label for="completion-notes">Completion Notes *</label>
+                    <textarea id="completion-notes" rows="3" placeholder="Add any notes about completing this task..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="completion-photo">Add Photo *</label>
+                    <input type="file" id="completion-photo" accept="image/*" required>
+                    <div id="photo-preview" class="photo-preview"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-complete-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Mark as Complete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Password Reset (Admin Only) -->
+    <div id="password-reset-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Reset User Password</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="password-reset-form">
+                <div class="form-group">
+                    <label for="reset-user-select">Select User *</label>
+                    <select id="reset-user-select" required>
+                        <option value="">Choose a user...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">New Password *</label>
+                    <input type="password" id="new-password" required placeholder="Enter new password (min 6 characters)" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-new-password">Confirm New Password *</label>
+                    <input type="password" id="confirm-new-password" required placeholder="Confirm new password" minlength="6">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-password-reset-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Reset Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Creating Expense Group -->
+    <div id="expense-group-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Expense Group</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="expense-group-form">
+                <div class="form-group">
+                    <label for="group-name">Group Name *</label>
+                    <input type="text" id="group-name" required placeholder="e.g., Monthly Expenses, Trip to Goa">
+                </div>
+                <div class="form-group">
+                    <label for="group-description">Description</label>
+                    <textarea id="group-description" rows="2" placeholder="Optional description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="group-members">Select Members *</label>
+                    <div id="group-members-checkboxes" class="checkbox-group">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-group-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Expense -->
+    <div id="add-expense-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Expense</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="add-expense-form">
+                <div class="form-group">
+                    <label for="expense-description">Description *</label>
+                    <input type="text" id="expense-description" required placeholder="e.g., Dinner at restaurant">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="expense-amount">Amount (₹) *</label>
+                        <input type="number" id="expense-amount" required min="0" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="expense-date">Date</label>
+                        <input type="date" id="expense-date" placeholder="Today">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="expense-split-type">Split Type</label>
+                    <select id="expense-split-type">
+                        <option value="equal">Split Equally</option>
+                        <option value="custom">Custom Amounts</option>
+                    </select>
+                </div>
+                <div class="form-group" id="equal-split-section">
+                    <label for="expense-split-with">Split With</label>
+                    <div id="expense-split-checkboxes" class="checkbox-group">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                    <small>Select members to split equally</small>
+                </div>
+                <div class="form-group" id="custom-split-section" style="display: none;">
+                    <label>Custom Split Amounts</label>
+                    <div id="expense-custom-splits" class="custom-split-container">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                    <div id="split-total-display" style="margin-top: 10px; font-weight: bold;"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-expense-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Recording Settlement -->
+    <div id="settlement-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirm Payment Received</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="settlement-form">
+                <div class="form-group">
+                    <label for="settlement-from-user">Received From *</label>
+                    <select id="settlement-from-user" required disabled style="background-color: #f5f5f5;">
+                        <option value="">Select person...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="settlement-amount">Amount (₹) *</label>
+                    <input type="number" id="settlement-amount" required min="0" step="0.01" placeholder="0.00" readonly style="background-color: #f5f5f5;">
+                </div>
+                <div class="form-group">
+                    <label for="settlement-notes">Notes</label>
+                    <textarea id="settlement-notes" rows="2" placeholder="Optional notes (e.g., payment method, transaction ID)"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-settlement-btn">Cancel</button>
+                    <button type="submit" class="btn btn-success">✓ Mark as Paid</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Managing Group Members -->
+    <div id="manage-members-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👥 Manage Group Members</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <h4 style="margin-bottom: 15px;">Current Members</h4>
+                <div id="current-members-list" class="checkbox-group">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 20px;">
+                <h4 style="margin-bottom: 15px;">Add New Members</h4>
+                <div id="available-members-list" class="checkbox-group">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="cancel-manage-members-btn">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-members-btn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+</body>
+</html>

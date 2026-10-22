@@ -1,3 +1,20 @@
+# 🏠 Poomarathingal Task Manager
+
+A web app for shared households to manage chores, track accountability, and split expenses fairly.
+
+## Features
+- **Accounts and roles:** secure login with admin and user roles
+- **Chore management:** create tasks, assign them randomly, and complete them with notes and a photo as proof
+- **Waste-bin tracker:** record who dumped the waste and when
+- **Expense splitting:** create groups, split bills equally or by custom amounts, view balances, and record settlements
+- **Activity feed and Telegram alerts:** every action is logged and sent to a Telegram group
+
+## Tech Stack
+- **Frontend:** HTML, CSS, vanilla JavaScript
+- **Backend:** Node.js, Express, MySQL
+- **Notifications:** a Telegram notifier microservice
+- **Deployment:** nginx reverse proxy, MySQL in Docker, systemd services
+
 # Roommates — Cloneable Deployment
 
 This repository is the reproducible deployment version of the Roommates application. It combines the application source with the database schema captured from the working Amazon Linux 2023 deployment and the deployment changes made during setup.

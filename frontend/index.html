@@ -295,6 +295,13 @@
                         <label for="task-duration">Estimated Time (minutes)</label>
                         <input type="number" id="task-duration" min="5" placeholder="30">
                     </div>
+		    <div class="form-group" id="task-assignment-group" style="display: none;">
+    <label for="task-assignee">Assign to member</label>
+    <select id="task-assignee">
+        <option value="">Unassigned</option>
+    </select>
+    <small class="form-help">Admin only. Select one member for this task.</small>
+</div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" id="cancel-task-btn">Cancel</button>

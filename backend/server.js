@@ -571,23 +571,135 @@ app.post("/api/tasks", requireAdmin, (req, res) => {
   );
 });
 
-// Update task (Admin only)
-app.put("/api/tasks/:id", requireAdmin, (req, res) => {
+// Update task and optionally manually assign it to one member (Admin only)
+app.put("/api/tasks/:id", requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { name, frequency, duration } = req.body;
+  const { name, frequency, duration, assigneeId } = req.body;
 
-  db.query(
-    "UPDATE tasks SET name = ?, frequency = ?, duration = ? WHERE id = ?",
-    [name, frequency, duration, id],
-    (err) => {
-      if (err) {
-        console.error("PUT /api/tasks error:", err);
-        return res.status(500).json({ error: "Failed to update task", details: err.code || err.message });
-      }
-      logActivity('task', `Updated task "${name}"`, '✏️', req.session.username);
-      res.json({ message: "Task updated" });
+  if (!name || name.trim() === "") {
+    return res.status(400).json({ error: "Task name is required" });
+  }
+
+  if (name.trim().length > 100) {
+    return res.status(400).json({ error: "Task name must be 100 characters or less" });
+  }
+
+  let connection;
+
+  try {
+    connection = await db.promise().getConnection();
+    await connection.beginTransaction();
+
+    const [taskRows] = await connection.query(
+      "SELECT id FROM tasks WHERE id = ?",
+      [id]
+    );
+
+    if (taskRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ error: "Task not found" });
     }
-  );
+
+    await connection.query(
+      "UPDATE tasks SET name = ?, frequency = ?, duration = ? WHERE id = ?",
+      [name.trim(), frequency || "one-time", duration || null, id]
+    );
+
+    // assigneeId is only accepted by this admin-only endpoint.
+    // null/empty explicitly means that the task should be unassigned.
+    if (assigneeId !== undefined) {
+      if (assigneeId !== null && assigneeId !== "") {
+        const [userRows] = await connection.query(
+          "SELECT id, COALESCE(full_name, username) AS name FROM users WHERE id = ? AND is_active = 1",
+          [assigneeId]
+        );
+
+        if (userRows.length === 0) {
+          await connection.rollback();
+          return res.status(400).json({ error: "Selected member is not active or does not exist" });
+        }
+
+        // One member per task: replace any existing assignment.
+        await connection.query(
+          "DELETE FROM assignments WHERE task_id = ?",
+          [id]
+        );
+
+        await connection.query(
+          `INSERT INTO assignments
+             (task_id, roommate_id, status, assigned_date, completed_date, completion_photo, completion_notes)
+           VALUES (?, ?, 'pending', CURRENT_TIMESTAMP, NULL, NULL, NULL)`,
+          [id, assigneeId]
+        );
+
+        await connection.query(
+          "UPDATE tasks SET status = 'pending' WHERE id = ?",
+          [id]
+        );
+
+        await connection.commit();
+
+        logActivity(
+          'assignment',
+          `Updated task "${name.trim()}" and manually assigned it to ${userRows[0].name}`,
+          '👤',
+          req.session.username
+        );
+
+        return res.json({
+          message: "Task updated and assigned successfully",
+          assignedTo: {
+            id: userRows[0].id,
+            name: userRows[0].name
+          }
+        });
+      }
+
+      // Explicitly unassigned.
+      await connection.query(
+        "DELETE FROM assignments WHERE task_id = ?",
+        [id]
+      );
+
+      await connection.query(
+        "UPDATE tasks SET status = 'pending' WHERE id = ?",
+        [id]
+      );
+    }
+
+    await connection.commit();
+
+    logActivity(
+      'task',
+      `Updated task "${name.trim()}"${assigneeId !== undefined ? ' and unassigned' : ''}`,
+      '✏️',
+      req.session.username
+    );
+
+    res.json({
+      message: assigneeId !== undefined
+        ? "Task updated and unassigned successfully"
+        : "Task updated"
+    });
+  } catch (err) {
+    if (connection) {
+      try {
+        await connection.rollback();
+      } catch (rollbackErr) {
+        console.error("Rollback error:", rollbackErr);
+      }
+    }
+
+    console.error("PUT /api/tasks/:id error:", err);
+    res.status(500).json({
+      error: "Failed to update task",
+      details: err.code || err.message
+    });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
+  }
 });
 
 // Delete task (Admin only) - Using reusable helper

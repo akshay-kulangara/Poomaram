@@ -427,6 +427,12 @@ class TaskManager {
                 duration: duration || null
             };
 
+            // Manual assignment is an admin-only edit feature.
+            if (this.editingTaskId && this.isUserAdmin()) {
+                const assigneeSelect = document.getElementById("task-assignee");
+                payload.assigneeId = assigneeSelect ? (assigneeSelect.value || null) : null;
+            }
+
             console.log("Sending task data:", payload);
             
             const response = await fetch(url, {
@@ -748,25 +754,50 @@ class TaskManager {
     openTaskModal(taskId = null) {
         const modal = document.getElementById("task-modal");
         const modalTitle = document.getElementById("task-modal-title");
-        
+        const assignmentGroup = document.getElementById("task-assignment-group");
+        const assigneeSelect = document.getElementById("task-assignee");
+
+        // Manual assignment is available only to admins and only while editing.
+        if (assignmentGroup) {
+            assignmentGroup.style.display = this.isUserAdmin() && taskId ? '' : 'none';
+        }
+
         if (taskId) {
             // Edit mode
             this.editingTaskId = taskId;
             const task = this.tasks.find(t => t.id === taskId);
-            
+
             if (task) {
                 modalTitle.textContent = "Edit Task";
                 document.getElementById("task-name").value = task.name;
                 document.getElementById("task-frequency").value = task.frequency || 'one-time';
                 document.getElementById("task-duration").value = task.duration || '';
+
+                if (assigneeSelect) {
+                    const assignment = this.assignments.find(a => a.task_id === taskId);
+
+                    assigneeSelect.innerHTML = `
+                        <option value="">Unassigned</option>
+                        ${this.users.map(user => `
+                            <option value="${user.id}">${user.full_name || user.username}</option>
+                        `).join('')}
+                    `;
+
+                    assigneeSelect.value = assignment ? String(assignment.roommate_id) : "";
+                }
             }
         } else {
             // Add mode
             this.editingTaskId = null;
             modalTitle.textContent = "Add New Task";
             document.getElementById("task-form").reset();
+
+            if (assigneeSelect) {
+                assigneeSelect.innerHTML = '<option value="">Unassigned</option>';
+                assigneeSelect.value = "";
+            }
         }
-        
+
         modal.classList.add("active");
     }
 
@@ -2488,3 +2519,4 @@ let app;
 document.addEventListener("DOMContentLoaded", () => {
     app = new TaskManager();
 });
+
